@@ -1,0 +1,132 @@
+а)	connect.php
+
+
+<?php 
+    $connect = mysqli_connect ('localhost','root','root','vostsibmetall');
+    if (!$connect) {
+        die('error connect');
+    }
+?>
+
+
+б)	sighup.php
+
+
+<?php
+    session_start();
+    require_once 'connect.php';
+    $login = $_POST['login'];
+    $fio = $_POST['fio'];
+    $phone_number = $_POST['phone_number'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $password_confirm = $_POST['password_confirm'];
+    if ($password === $password_confirm) {
+        $password = md5($password);
+        mysqli_query($connect, "INSERT INTO `users` (`login`, `password`, `fio`, `phone_number`, `email`) VALUES ('$login', '$password', '$fio', '$phone_number', '$email')");
+        $_SESSION['msg'] = 'Успешная регистрация';
+        header('Location: ../index.php');
+    } else {
+        $_SESSION['msg'] = 'Пароли не совпадают';
+        header('Location: ../index.php');
+    }
+?>
+
+
+в)	login.php
+
+
+<?php
+    session_start();
+    require_once 'connect.php';
+    $login = $_POST['login'];
+    $password = $_POST['password'];
+    $password = md5($password);
+    $check = mysqli_query($connect, "SELECT * FROM `users` WHERE `login` = '$login' AND `password` = '$password'");
+    if (mysqli_num_rows($check)>0) {
+        $user = mysqli_fetch_assoc($check);
+        setcookie('user', $user['login'], time() + 3600, "/");
+        setcookie('user_fio', $user['fio'], time() + 3600, "/");
+        setcookie('user_number', $user['phone_number'], time() + 3600, "/");
+        setcookie('user_email', $user['email'], time() + 3600, "/");
+        header('Location: ../index.php');
+    } else {
+        $_SESSION['msg'] = 'Не верный логин или пароль';
+        header('Location: ../index.php');
+    }
+?>
+
+
+г)	new_order.php
+
+
+<?php
+    session_start();
+    require_once 'connect.php';
+    $login = $_COOKIE['user'];
+    $adress = $_POST['adress'];
+    $metall_name = $_POST['metall_name'];
+    $metall_weight = $_POST['metall_weight'];
+    mysqli_query($connect, "INSERT INTO `orders` (`user_id`, `FIO`, `phone_number`, `email`, `adress`, `metall_name`, `metall_price`, `metall_weight`, `order_check`) VALUES ((SELECT user_id FROM users WHERE login = '$login'), (SELECT fio FROM users WHERE login = '$login'), (SELECT phone_number FROM users WHERE login = '$login'), (SELECT email FROM users WHERE login = '$login'), '$adress', '$metall_name', (SELECT metall_price FROM metall WHERE metall_name = '$metall_name'), '$metall_weight', '0')");
+    $_SESSION['msg'] = 'Заказ оформлен!';
+    header('Location: ../order.php');
+?>
+
+
+д)	update_fio.php
+
+
+<?php
+    session_start();
+    require_once 'connect.php';
+    $login = $_COOKIE['user'];
+    $fio = $_POST['fio'];
+    $check = mysqli_query($connect, "SELECT * FROM `users` WHERE `login` = '$login'");
+    if (mysqli_num_rows($check)>0) {
+        $update = mysqli_query($connect, "UPDATE users SET fio = '$fio' WHERE `login` = '$login'");
+        setcookie('user_fio', $user['fio'], time() - 3600, "/");
+        setcookie('user_fio', $user['fio'], time() + 3600, "/");
+        header('Location: ../lk.php');
+    }
+?>
+
+
+е)	update_al_price.php
+
+
+<?php
+    session_start();
+    require_once 'connect.php';
+    $metall_price = $_POST['metall_price'];
+    $check = mysqli_query($connect, "SELECT * FROM `metall` WHERE `metall_name` = 'Алюминий'");
+    if (mysqli_num_rows($check)>0) {
+        $update = mysqli_query($connect, "UPDATE `metall` SET `metall_price` = '$metall_price' WHERE `metall_name` = 'Алюминий'");
+        
+        header('Location: ../lk_rate.php');
+?>
+
+
+ж)	update_order.php
+
+
+<?php
+    session_start();
+    require_once 'connect.php';
+    $check_order = mysqli_query($connect, "SELECT order_id FROM orders WHERE order_check = '0'");
+    if (mysqli_num_rows($check_order)>0) {
+        $result_order = mysqli_fetch_assoc($check_order);
+        $order_id = $result_order['order_id'];
+        $update_order = mysqli_query($connect, "UPDATE orders SET order_check = '1' WHERE order_id = '$order_id'");
+        if (mysqli_num_rows($check_order)>0) {
+            $insert_trade = mysqli_query($connect, "INSERT INTO `trades` (`order_id`, `fio`, `phone_number`, `email`, `metall_name`, `metall_price`, `metall_weight`, `trade_date`) VALUES ((SELECT `order_id` FROM `orders` WHERE `order_id` = '$order_id'), (SELECT `fio` FROM `orders` WHERE `order_id` = '$order_id'), (SELECT `phone_number` FROM `orders` WHERE `order_id` = '$order_id'), (SELECT `email` FROM `orders` WHERE `order_id` = '$order_id'), (SELECT `metall_name` FROM `orders` WHERE `order_id` = '$order_id'), (SELECT `metall_price` FROM `orders` WHERE `order_id` = '$order_id'), (SELECT `metall_weight` FROM `orders` WHERE `order_id` = '$order_id'), now())");
+            if (mysqli_num_rows($check_order)>0) {
+                $check_sum = mysqli_fetch_assoc($check_order);
+                $sum1 = $order_id = $result_order['metall_price'];
+                $sum2 = $order_id = $result_order['metall_weight'];
+                $sum = $sum1 * $sum2;
+                mysqli_query($connect, "UPDATE trades SET total_price = '$sum' WHERE order_id = '$order_id'");        
+            }   
+        }   
+    }
+  header('Location: ../lk_orders.php');
+?>

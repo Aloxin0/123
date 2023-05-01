@@ -1,0 +1,209 @@
+а)	order.php
+
+
+<?php
+session_start();
+require_once 'inc/connect.php';
+?>
+                    <?php
+                    if($_COOKIE['user'] == ''):
+                    ?>
+                    <a class="header_btn" href="#" data-modal="#login">Войти</a>
+                    <?php else: ?>
+                    <nav>
+                        <a class="header_btn" href="lk.php"><?=$_COOKIE['user']?></a>
+                        <a href="inc/exit.php"><img src="assets/images/logout.png"></a>
+                    </nav>
+                    <?php endif; ?>
+                <?php
+                    if($_COOKIE['user'] == ''):
+                ?>
+                <h2 class="order_title">Для оформления заказа, необходимо авторизоваться.<a class="order_btn_not" href="#" data-modal="#login">Войти!</a></h2>
+                <?php else: ?>
+                                <form class="order_content" action="inc/new_order.php" method="post">
+                    <div class="order_item">
+                                            <p class="order_title_info">Адрес</p>
+                        <div class="order_info">
+                        <input type="text" name="adress" placeholder="Введите адрес"></div>
+                    </div>
+                    <div class="order_item">
+                        <p class="order_title_info">Металл</p>
+                        <div class="order_info">
+                        <input type="text" name="metall_name" placeholder="Введите наименование металла">
+                        </div>
+                    </div>
+                    <div class="order_item">
+                        <p class="order_title_info">Масса(т)</p>
+                        <div class="order_info">
+                        <input type="text" name="metall_weight" placeholder="Введите массу">
+                        </div>
+                    </div>
+                    <div class="order_item">
+                        <button class="order_btn" type="submit">Оформить заказ</button>
+                    </div>
+                </form>    
+                <?php endif; ?>
+        <?php
+        if ($_SESSION['msg']) {
+        echo ('<script>alert('$_SESSION['msg']');</script>');
+        }
+        ?>
+
+
+б)	about.php
+
+
+<?php
+session_start();
+?>
+<?php
+                    if($_COOKIE['user'] == ''):
+                    ?>
+                    <a class="header_btn" href="#" data-modal="#login">Войти</a>
+                    <?php else: ?>
+                    <nav>
+                        <a class="header_btn" href="lk.php"><?=$_COOKIE['user']?></a>
+                        <a href="inc/exit.php"><img src="assets/images/logout.png"></a>
+                    </nav>
+                    <?php endif; ?>
+        <?php
+        if ($_SESSION['msg']) {
+        echo ('<script>alert('$_SESSION['msg']');</script>');
+        }
+        ?>
+
+
+в)	page_al.php
+
+
+<?php
+session_start();
+require_once 'inc/connect.php';
+?>
+<?php
+                    if($_COOKIE['user'] == ''):
+                    ?>
+                    <a class="header_btn" href="#" data-modal="#login">Войти</a>
+                    <?php else: ?>
+                    <nav>
+                        <a class="header_btn" href="lk.php"><?=$_COOKIE['user']?></a>
+                        <a href="inc/exit.php"><img src="assets/images/logout.png"></a>
+                    </nav>
+                    <?php endif; ?>
+                    <h2 class="page_title">Алюминий</h2>
+                    <p class="page_rate">Курс <?php $check = mysqli_query($connect, "SELECT metall_price FROM metall WHERE metall_name = 'Алюминий'");
+                        $data = mysqli_fetch_assoc($check);
+                        echo $data['metall_price'];
+                        ?> руб/т</p>
+                
+<?php
+        if ($_SESSION['msg']) {
+        echo ('<script>alert('$_SESSION['msg']');</script>');
+        }
+        ?>
+
+
+г)	lk.php
+
+
+<?php
+session_start();
+?>
+    <body>
+        <div class="sidebar">
+            <div class="logo">
+            <a  class="logo_title" href="index.php">ВостСибМеталл</a>
+            </div>
+            <ul class="side_nav">
+                <?php
+                if($_COOKIE['user'] == 'admin'):
+                ?>
+                <li><a href="lk.php">Личный кабинет</a></li>
+                <li><a href="lk_rate.php">Курсы металла</a></li>
+                <li><a href="lk_orders.php">Заказы</a></li>
+                <li><a href="lk_trades.php">Товарные накладные</a></li>
+                <?php else: ?>
+                <li><a href="lk.php">Личный кабинет</a></li>
+                <li><a href="lk_user_orders.php">Мои заказы</a></li>
+                <?php endif; ?>
+            </ul>
+            <div class="user">
+                <div class="user_content">
+                    <div class="user_name"><?php echo $_COOKIE['user'] ?></div>
+                    <div class="user_logout"><a href="inc/exit.php" href="index.php"><i class='bx bx-log-out'></i></a></div>
+                </div>
+            </div>
+        </div>
+        <div class="main_area">
+            <div class="lk_container">
+                <h1 class="lk_title">Личный кабинет</h1>
+                <div class="lk_content">
+                    <div class="lk_item">
+                        <p class="lk_title_info">Логин</p>
+                        <p class="lk_info_text"><?php echo $_COOKIE['user'] ?></p>
+                    </div>
+                    <div class="lk_item">
+                        <p class="lk_title_info">Пароль</p>
+                        <form action="inc/update_password.php" method="post">
+                        <div class="lk_info">
+                        <input type="password" name="password" placeholder="Введите пароль">
+                        <button class="lk_btn" type="submit">Изменить</button>
+                        </div>
+                        </form>
+                    </div>
+                    <div class="lk_item">
+                        <p class="lk_title_info">ФИО</p>
+                        <?php 
+                        if($_COOKIE['user_fio'] != ''):
+                        ?>
+                        <p class="lk_title_info"><?php echo $_COOKIE['user_fio'] ?></p>
+                        <form action="inc/update_fio.php" method="post">
+                        <div class="lk_info">
+                        <input type="text" name="fio" placeholder="Введите ФИО">
+                        <button class="lk_btn" type="submit">Изменить</button>
+                        </div>
+                        <?php else: ?>
+                        <div class="lk_info">
+                        <input type="text" name="fio" placeholder="Введите ФИО">
+                        <button class="lk_btn" type="submit">Изменить</button>
+                        </div>
+                        </form>
+                        <?php endif; ?>
+                    </div>
+                    <div class="lk_item">
+                        <p class="lk_title_info">Номер телефона</p>
+                        <?php 
+                        if($_COOKIE['user_fio'] != ''):
+                        ?>
+                        <p class="lk_title_info"><?php echo $_COOKIE['user_number'];?></p>
+                        <form action="inc/update_number.php" method="post">
+                        <div class="lk_info">
+                        <input type="text" name="phone_number" placeholder="Введите номер телефона">
+                        <button class="lk_btn">Изменить</button>
+                        </div>
+                        <?php else: ?>
+                        <div class="lk_info">
+                        <input type="text" name="phone_number" placeholder="Введите номер телефона">
+                        <button class="lk_btn">Изменить</button>
+                        </div>
+                        </form>
+                        <?php endif; ?>
+                    </div>
+                    <div class="lk_item">
+                        <p class="lk_title_info">E-mail</p>
+                        <?php 
+                        if($_COOKIE['user_fio'] != ''):
+                        ?>
+                        <p class="lk_title_info"><?php echo $_COOKIE['user_email'];?></p>
+                        <form action="inc/update_email.php" method="post">
+                        <div class="lk_info">
+                        <input type="text" name="email" placeholder="Введите почту">
+                        <button class="lk_btn">Изменить</button>
+                        </div>
+                        <?php else: ?>
+                        <div class="lk_info">
+                        <input type="text" name="email" placeholder="Введите почту">
+                        <button class="lk_btn">Изменить</button>
+                        </div>
+                        </form>
+                        <?php endif; ?>
